@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pick Two: Survive the Hour</title>
+  <meta name="description" content="A thought-experiment simulator: pick two animal groups to defend you in an arena, everything else attacks. Survive one hour.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏟️</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main id="menu" class="screen">
+    <header class="hero">
+      <p class="eyebrow">A thought experiment, simulated</p>
+      <h1>Pick two. Survive the hour.</h1>
+      <p class="premise">
+        You’re in an arena with 50 hawks, 10 crocodiles, 3 brown bears, 15 wolves, 1 hunter with a rifle,
+        7 buffalo, 10,000 rats, 5 gorillas and 4 lions. <strong>Pick two to defend you.</strong> Everything else attacks.
+      </p>
+    </header>
+
+    <section aria-labelledby="pick-heading">
+      <div class="section-head">
+        <h2 id="pick-heading">Choose your defenders</h2>
+        <p class="muted" id="pick-hint">Tap two cards.</p>
+      </div>
+      <div id="cards" class="cards" role="list"></div>
+    </section>
+
+    <section id="results" class="results" hidden aria-live="polite"></section>
+
+    <footer class="foot muted">
+      <p>
+        Every run is a simulation: animals move, hesitate, charge, block, flee, stop to eat and tire.
+        Numbers are configurable under <em>Tune</em>. Nothing leaves your browser.
+      </p>
+    </footer>
+  </main>
+
+  <div id="actionbar" class="actionbar">
+    <div class="ab-picks" id="ab-picks" aria-live="polite"></div>
+    <div class="ab-controls">
+      <div class="seg" role="radiogroup" aria-label="Behaviour preset" id="preset-seg">
+        <button type="button" role="radio" data-preset="grounded">Grounded</button>
+        <button type="button" role="radio" data-preset="arcade">Arcade</button>
+        <button type="button" role="radio" data-preset="custom" hidden>Custom</button>
+      </div>
+      <button type="button" class="btn ghost" id="btn-tune" title="Edit every species' stats">⚙︎ Tune</button>
+      <button type="button" class="btn ghost" id="btn-rank" title="Simulate every possible pair">Rank all 36 pairs</button>
+      <button type="button" class="btn" id="btn-trials" disabled>Run 100 trials</button>
+      <button type="button" class="btn primary" id="btn-watch" disabled>▶ Watch the hour</button>
+    </div>
+  </div>
+
+  <section id="sim" class="sim" hidden>
+    <canvas id="canvas" aria-label="Arena simulation"></canvas>
+
+    <div class="hud-top">
+      <div class="hud-clock">
+        <div class="clock" id="hud-clock">0:00</div>
+        <div class="clock-sub"><span id="hud-total">of 60:00</span></div>
+        <div class="progress"><div id="hud-progress"></div></div>
+      </div>
+      <div class="hud-hp">
+        <div class="hp-label"><span>🧍 You</span><span id="hud-hp-num">100</span></div>
+        <div class="hp-bar"><div id="hud-hp"></div></div>
+        <div class="hp-status muted" id="hud-status">Holding position</div>
+      </div>
+      <div class="hud-speed">
+        <div class="seg small" role="radiogroup" aria-label="Speed" id="speed-seg"></div>
+        <button type="button" class="icon-btn" id="btn-pause" title="Pause (space)">⏸</button>
+        <button type="button" class="icon-btn" id="btn-fs" title="Full screen (F)">⛶</button>
+        <button type="button" class="icon-btn" id="btn-exit" title="Back to picks (Esc)">✕</button>
+      </div>
+    </div>
+
+    <aside class="hud-side" id="hud-side">
+      <h3><span class="dot def"></span>Defending you</h3>
+      <ul id="hud-def"></ul>
+      <h3><span class="dot att"></span>Attacking</h3>
+      <ul id="hud-att"></ul>
+      <p class="hud-legend muted">🍖 eating · 💨 fleeing · scroll to zoom, drag to pan</p>
+    </aside>
+
+    <ol class="hud-log" id="hud-log" aria-live="polite"></ol>
+    <div class="tooltip" id="tooltip" hidden></div>
+
+    <div class="end" id="end" hidden>
+      <div class="end-card" role="dialog" aria-labelledby="end-title">
+        <p class="eyebrow" id="end-eyebrow"></p>
+        <h2 id="end-title"></h2>
+        <p class="muted" id="end-sub"></p>
+        <div class="end-grid">
+          <div>
+            <h4>Damage you took</h4>
+            <div id="end-dmg" class="hbars"></div>
+          </div>
+          <div>
+            <h4>Your defenders’ kills</h4>
+            <div id="end-kills" class="kill-list"></div>
+          </div>
+        </div>
+        <div class="end-actions">
+          <button type="button" class="btn ghost" id="btn-end-back">Back to picks</button>
+          <button type="button" class="btn ghost" id="btn-end-replay">Replay this run</button>
+          <button type="button" class="btn primary" id="btn-end-new">New run</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <dialog id="tune" class="tune">
+    <form method="dialog" class="tune-inner">
+      <header class="tune-head">
+        <div>
+          <h2>Tune the animals</h2>
+          <p class="muted" id="tune-preset-desc"></p>
+        </div>
+        <button class="icon-btn" value="close" aria-label="Close">✕</button>
+      </header>
+      <div class="tune-table-wrap">
+        <table class="tune-table" id="tune-table"></table>
+      </div>
+      <div class="tune-extra" id="tune-extra"></div>
+      <footer class="tune-foot">
+        <button type="button" class="btn ghost" id="tune-reset-g">Reset to Grounded</button>
+        <button type="button" class="btn ghost" id="tune-reset-a">Reset to Arcade</button>
+        <button class="btn primary" value="close">Done</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="js/engine.js"></script>
+  <script src="js/trials.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
