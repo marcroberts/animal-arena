@@ -8,7 +8,13 @@ A browser simulation of the thought experiment:
 
 ## Running it
 
-Open `index.html` in a browser. There is no build step and no server code; it also works from any static host.
+Open `public/index.html` in a browser. There is no build step and no server code; it also works from any static host.
+
+To deploy it as the `animal-arena` Cloudflare Worker (assets only, configured in `wrangler.jsonc`):
+
+```sh
+npx wrangler deploy
+```
 
 - **Watch the hour**: a full-screen, top-down replay of one run. *Auto* speed slows down for the action
   and speeds through lulls; 1×–200× are fixed. Scroll to zoom, drag to pan, hover any animal to see what it's doing.
@@ -23,7 +29,7 @@ the main thread if workers are blocked.
 
 ## How the model works
 
-Everything is in `js/engine.js` (pure logic, no DOM). Fixed 0.2 s steps with a seeded RNG, so any
+Everything is in `public/js/engine.js` (pure logic, no DOM). Fixed 0.2 s steps with a seeded RNG, so any
 `(settings, pair, seed)` replays identically. Watching a run from the trials list shows exactly the run that was counted.
 
 - **Attackers** circle at a distance and decide each second whether to commit. That chance is their
@@ -49,9 +55,10 @@ The numbers are judgement calls, not zoology. Change them under *Tune* and re-ra
 
 | Path | What |
 |---|---|
-| `index.html` | Page shell |
-| `css/style.css` | Styles |
-| `js/engine.js` | Simulation engine and species defaults |
-| `js/trials.js` | Worker pool for Monte Carlo runs |
-| `js/render.js` | Canvas renderer |
-| `js/app.js` | UI: picking, results, tuning, live view |
+| `public/index.html` | Page shell |
+| `public/css/style.css` | Styles |
+| `public/js/engine.js` | Simulation engine and species defaults |
+| `public/js/trials.js` | Worker pool for Monte Carlo runs |
+| `public/js/render.js` | Canvas renderer |
+| `public/js/app.js` | UI: picking, results, tuning, live view |
+| `wrangler.jsonc` | Cloudflare Worker config (static assets from `public/`) |

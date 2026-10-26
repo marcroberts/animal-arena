@@ -1,0 +1,12 @@
+{
+  "name": "animal-arena",
+  "compatibility_date": "2026-10-26",
+
+  // Assets-only Worker: there is no "main", so no code of ours runs on the
+  // server. The whole simulation runs in the browser.
+  "assets": {
+    "directory": "./public",
+    // One real page; unknown paths should 404 rather than serve index.html.
+    "not_found_handling": "none"
+  }
+}
