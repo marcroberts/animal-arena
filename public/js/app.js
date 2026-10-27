@@ -373,8 +373,11 @@
       Sim.FIELDS.map(f => el('th', { title: f.help }, f.label)))));
     const tbody = el('tbody');
     const input = (obj, defObj, f) => {
+      // No min/max attributes: they make the step grid start at min, so defaults like courage 60
+      // (min 1, step 5) fail validation. Without them the arrows step from the current value;
+      // the change handler below does the clamping.
       const inp = el('input', {
-        type: 'number', step: f.step, min: f.min, max: f.max, value: obj[f.key], 'aria-label': f.label,
+        type: 'number', step: f.step, value: obj[f.key], 'aria-label': f.label,
         class: obj[f.key] !== defObj[f.key] ? 'changed' : null,
       });
       inp.addEventListener('change', () => {
