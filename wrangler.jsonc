@@ -12,7 +12,11 @@
   // Workers Logs: keeps console output and request logs in the dashboard.
   "observability": {
     "enabled": true,
-    "head_sampling_rate": 1
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
   },
 
   // The site is static files; the simulation runs entirely in the browser.
