@@ -18,9 +18,11 @@ const Renderer = (() => {
     ratDef: '#8fb3e8',
   };
 
-  function create(canvas) {
+  // topInset() returns how many CSS pixels at the top are covered by HUD;
+  // the arena is fitted and centred in the space below it.
+  function create(canvas, topInset) {
     const ctx = canvas.getContext('2d');
-    let W = 0, H = 0, DPR = 1;
+    let W = 0, H = 0, DPR = 1, CY = 0;
     let world = null;
     let fitScale = 10, zoom = 1, camX = 60, camY = 40;
     const sprites = new Map();
@@ -126,7 +128,11 @@ const Renderer = (() => {
       DPR = Math.min(window.devicePixelRatio || 1, 2);
       W = canvas.clientWidth; H = canvas.clientHeight;
       canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
-      if (world) fitScale = Math.min(W / (world.w + 6), H / (world.h + 6));
+      // Only reserve the HUD's space when what's left still fits a decent arena.
+      let top = topInset ? topInset() : 0;
+      if (H - top < H * 0.6) top = 0;
+      CY = top + (H - top) / 2;
+      if (world) fitScale = Math.min(W / (world.w + 6), (H - top) / (world.h + 6));
     }
 
     function reset(sim) {
@@ -142,17 +148,17 @@ const Renderer = (() => {
     const scale = () => fitScale * zoom;
     function toScreen(x, y) {
       const s = scale();
-      return [(x - camX) * s + W / 2, (y - camY) * s + H / 2];
+      return [(x - camX) * s + W / 2, (y - camY) * s + CY];
     }
     function toWorld(sx, sy) {
       const s = scale();
-      return [(sx - W / 2) / s + camX, (sy - H / 2) / s + camY];
+      return [(sx - W / 2) / s + camX, (sy - CY) / s + camY];
     }
     function zoomAt(sx, sy, factor) {
       const [wx, wy] = toWorld(sx, sy);
       zoom = Math.min(6, Math.max(1, zoom * factor));
       const s = scale();
-      camX = wx - (sx - W / 2) / s; camY = wy - (sy - H / 2) / s;
+      camX = wx - (sx - W / 2) / s; camY = wy - (sy - CY) / s;
       clampCam();
     }
     function panBy(dx, dy) {

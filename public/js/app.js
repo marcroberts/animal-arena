@@ -414,7 +414,7 @@
 
   // ---------- live simulation ----------
   let live = null;
-  const renderer = Renderer.create($('#canvas'));
+  const renderer = Renderer.create($('#canvas'), () => $('.hud-top').getBoundingClientRect().bottom);
 
   function startWatch(opts) {
     opts = opts || {};

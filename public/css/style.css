@@ -462,11 +462,31 @@ h1, h2, h3, h4 { margin: 0; line-height: 1.15; }
   .actionbar { padding: 10px 16px; }
   .ab-controls { width: 100%; }
   .ab-controls .btn { flex: 1; padding: 9px 10px; }
-  .hud-top { grid-template-columns: 1fr auto; }
-  .hud-hp { grid-column: 1 / -1; grid-row: 2; }
+  /* Clock and health share the first row; speed controls get the full width below. */
+  .hud-top { top: 8px; left: 8px; right: 8px; grid-template-columns: auto minmax(0, 1fr); gap: 8px; }
+  .hud-speed { grid-column: 1 / -1; padding: 4px; gap: 4px; }
+  .hud-speed .seg { flex: 1; display: flex; min-width: 0; }
+  .hud-speed .seg button { flex: 1; padding: 6px 0; font-size: 12px; }
+  .hud-speed .icon-btn { width: 32px; height: 32px; flex: none; }
   .hud-side { display: none; }
   .clock { font-size: 20px; }
-  .hud-clock { min-width: 0; }
+  .hud-clock { min-width: 0; padding: 6px 10px; }
+  .clock-sub { white-space: nowrap; }
+  .hud-hp { padding: 6px 10px; min-width: 0; }
+  .hud-log { left: 8px; bottom: 8px; max-width: calc(100vw - 16px); }
+  .hud-log li { font-size: 12px; }
+}
+/* Phones held sideways: everything on one slim row so the arena keeps its height. */
+@media (max-height: 500px) and (min-width: 560px) {
+  .hud-top { grid-template-columns: auto minmax(0, 1fr) auto; align-items: stretch; }
+  .hud-speed { grid-column: auto; }
+  .hud-speed .seg button { flex: none; padding: 6px 7px; }
+  .clock { font-size: 18px; }
+  .clock-sub, .progress { display: none; }
+  .hud-clock { display: flex; align-items: center; }
+  .hud-hp { padding: 5px 10px; }
+  .hp-bar { margin: 4px 0 2px; height: 6px; }
+  .hp-status { font-size: 11px; }
   .end-grid { grid-template-columns: 1fr; }
   .hbar { grid-template-columns: 96px 1fr; }
   .rank-table .ci, .rank-table .hide-sm { display: none; }
