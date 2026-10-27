@@ -10,7 +10,8 @@ A browser simulation of the thought experiment:
 
 Open `public/index.html` in a browser. There is no build step and no server code; it also works from any static host.
 
-To deploy it as the `animal-arena` Cloudflare Worker (assets only, configured in `wrangler.jsonc`):
+Live at https://animal-arena.marcroberts.info. To deploy it as the `animal-arena` Cloudflare Worker
+(configured in `wrangler.jsonc`; the workers.dev address redirects to the custom domain):
 
 ```sh
 npx wrangler deploy
@@ -61,4 +62,5 @@ The numbers are judgement calls, not zoology. Change them under *Tune* and re-ra
 | `public/js/trials.js` | Worker pool for Monte Carlo runs |
 | `public/js/render.js` | Canvas renderer |
 | `public/js/app.js` | UI: picking, results, tuning, live view |
-| `wrangler.jsonc` | Cloudflare Worker config (static assets from `public/`) |
+| `src/index.js` | Worker: serves `public/`, redirects workers.dev to the custom domain |
+| `wrangler.jsonc` | Cloudflare Worker config (custom domain, static assets from `public/`) |
