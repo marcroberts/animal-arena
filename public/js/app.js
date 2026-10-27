@@ -433,22 +433,40 @@
     $('#actionbar').hidden = true;
     $('#sim').hidden = false;
     $('#end').hidden = true;
+    $('#sim-error').hidden = true;
     $('#hud-log').textContent = '';
     renderer.reset(sim);
     renderSpeedSeg();
     updatePauseBtn();
     renderSidePanel(true);
-    if (opts.fullscreen && $('#sim').requestFullscreen && !document.fullscreenElement) {
-      $('#sim').requestFullscreen().catch(() => {});
-    }
+    // Start the loop before asking for fullscreen, so a browser that balks at
+    // fullscreen (iOS Safari) can't stop the sim from running.
     live.raf = requestAnimationFrame(frame);
+    if (opts.fullscreen && !document.fullscreenElement) enterFullscreen();
+  }
+
+  // iPhone Safari has no element fullscreen, and some WebKit builds expose
+  // requestFullscreen without returning a promise, so guard every step.
+  function enterFullscreen() {
+    const s = $('#sim');
+    if (!s.requestFullscreen || document.fullscreenEnabled === false) return;
+    try {
+      const p = s.requestFullscreen();
+      if (p && p.catch) p.catch(() => {});
+    } catch (err) { /* not allowed here; stay windowed */ }
+  }
+  function leaveFullscreen() {
+    try {
+      const p = document.exitFullscreen && document.exitFullscreen();
+      if (p && p.catch) p.catch(() => {});
+    } catch (err) { /* already out */ }
   }
 
   function exitWatch() {
     if (!live) return;
     cancelAnimationFrame(live.raf);
     live = null;
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    if (document.fullscreenElement) leaveFullscreen();
     $('#sim').hidden = true;
     $('#actionbar').hidden = false;
     $('#menu').removeAttribute('aria-hidden');
@@ -467,9 +485,24 @@
     return 45;
   }
 
+  // Keep the loop alive through an exception and put the message on screen,
+  // since mobile browsers give no other way to see it.
   function frame(ts) {
     if (!live) return;
     const L = live;
+    try { tick(L, ts); } catch (err) { showSimError(err); }
+    if (live === L) L.raf = requestAnimationFrame(frame);
+  }
+
+  function showSimError(err) {
+    console.error(err);
+    const box = $('#sim-error');
+    if (!box.hidden) return;
+    box.textContent = `Something went wrong: ${err && err.message ? err.message : err}`;
+    box.hidden = false;
+  }
+
+  function tick(L, ts) {
     const realDt = L.last ? Math.min(0.1, (ts - L.last) / 1000) : 0.016;
     L.last = ts;
     const sim = L.sim;
@@ -504,7 +537,6 @@
       L.endTimer += realDt;
       if (L.endTimer > 1.4) { L.endShown = true; updateHud(); showEnd(); }
     }
-    L.raf = requestAnimationFrame(frame);
   }
 
   function personStatus(sim) {
@@ -719,6 +751,9 @@
     $('#btn-end-new').addEventListener('click', () => live && startWatch({ picks: live.picks, cfg: live.cfg }));
     $('#btn-pause').addEventListener('click', () => { if (live) { live.paused = !live.paused; updatePauseBtn(); updateHud(); } });
     $('#btn-fs').addEventListener('click', toggleFullscreen);
+    if (!$('#sim').requestFullscreen || document.fullscreenEnabled === false) $('#btn-fs').hidden = true;
+    // Errors outside the frame loop (e.g. while setting up a run) still get shown.
+    window.addEventListener('error', (e) => { if (live) showSimError(e.error || e.message); });
 
     const canvas = $('#canvas');
     let drag = null;
@@ -760,9 +795,8 @@
   }
 
   function toggleFullscreen() {
-    const s = $('#sim');
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-    else if (s.requestFullscreen) s.requestFullscreen().catch(() => {});
+    if (document.fullscreenElement) leaveFullscreen();
+    else enterFullscreen();
   }
 
   load();

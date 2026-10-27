@@ -366,6 +366,17 @@ h1, h2, h3, h4 { margin: 0; line-height: 1.15; }
   z-index: 5;
 }
 .tooltip b { font-weight: 700; }
+.sim-error {
+  position: absolute;
+  left: 12px; right: 12px; top: 50%;
+  margin: 0 auto;
+  max-width: 460px;
+  padding: 10px 14px;
+  background: rgba(120, 20, 20, 0.92);
+  border-radius: 10px;
+  font-size: 13px;
+  z-index: 6;
+}
 .tooltip .team-def { color: var(--def); }
 .tooltip .team-att { color: var(--att); }
 
